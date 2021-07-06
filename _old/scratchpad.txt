@@ -1,0 +1,17 @@
+Histograms for bootstrapping method
+
+# Parameters
+sample_size = len(m_data)
+samples = N * 100
+
+# Get the average of 'samples' number of samples with 'sample_size' elements in each sample
+means = np.mean(np.random.choice(m_data, (samples, sample_size)), axis=1)
+xbar_init = np.round(np.mean(m_data), 2)
+
+sns.distplot(means, color="r", kde=True, hist_kws=dict(edgecolor="b", linewidth=0.675))
+plt.xlabel("Initial Sample Mean: {}".format(xbar_init))
+plt.title("Distribution of Sample Mean")
+plt.axvline(x=xbar_init)  # vertical line at xbar_init
+plt.show()
+
+sys.exit()
