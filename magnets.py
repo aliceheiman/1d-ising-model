@@ -7,6 +7,21 @@ import matplotlib.pyplot as plt
 plt.style.use("seaborn")
 sys.setrecursionlimit(100000)
 
+params = {
+    "font.family": "STIXGeneral",
+    "mathtext.fontset": "stix",
+    "axes.labelsize": 10,
+    "legend.fontsize": 9,
+    "xtick.labelsize": 10,
+    "ytick.labelsize": 10,
+    "text.usetex": True,
+    "figure.figsize": [3.44, 3.44],
+    "axes.grid": False,
+}
+
+plt.rcParams.update(params)
+plt.close("all")
+
 #######################################
 # SETUP
 #######################################
@@ -17,6 +32,21 @@ epsilon = 1.0e-6
 mean_field = True
 energy_graph = False
 exact = True
+
+offset_x = 0  # -0.021
+offset_y = 0  # 0.040
+bottom_right = [
+    (0.81 + offset_x, 0.24 + offset_y),
+    (0.81 + offset_x, 0.21 + offset_y),
+    (0.81 + offset_x, 0.18 + offset_y),
+]
+top_right = [(0.81, 0.84), (0.81, 0.80), (0.81, 0.76)]
+bottom_left = [(0.15, 0.22), (0.15, 0.18), (0.15, 0.14)]
+top_left = [(0.15, 0.84), (0.15, 0.80), (0.15, 0.76)]
+# top_left = [(0.13, 0.84), (0.13, 0.82), (0.13, 0.80)]
+
+graph = 1
+positioning = top_right
 
 ITERATIONS, T_ITERATIONS = get_iterations(iteration, thermalization)
 x_label, x_values = get_xlabel("parameters.txt")
@@ -111,58 +141,55 @@ e_stds = np.array(e_stds)
 
 m_calc = np.array(m_calc)
 
-if not mean_field:
+# MAGNETIZATION
 
-    # MAGNETIZATION
+if energy_graph:
+    plt.subplot(1, 2, 1)
 
-    if energy_graph:
-        plt.subplot(1, 2, 1)
+plt.plot(x_values, m_avgs, label="Monte Carlo")
 
-    plt.plot(x_values, m_avgs, label="Monte Carlo")
-    plt.title("System Magnetization")
-    plt.xlabel(x_label)
-    plt.ylabel("Magnetization")
-
-    plt.axhline(y=0, color="k", linestyle="-", linewidth=1.2)
-
-    lower_bound = m_avgs - m_stds
-    upper_bound = m_avgs + m_stds
-    plt.fill_between(x_values, lower_bound, upper_bound, alpha=0.3)
-
-    if energy_graph:
-        # ENERGY
-
-        plt.subplot(1, 2, 2)
-        plt.plot(x_values, e_avgs, label="Energy")
-        plt.title("System Energy")
-        plt.xlabel(x_label)
-        plt.ylabel("Energy")
-
-        lower_bound = e_avgs - e_stds
-        upper_bound = e_avgs + e_stds
-        plt.fill_between(x_values, lower_bound, upper_bound, alpha=0.3)
-
-    # Display graph!
-    plt.show()
-
-else:
-
-    # MAGNETIZATION
-    plt.plot(x_values, m_avgs, label="Monte Carlo")
+if mean_field:
     plt.plot(x_values, m_calc, label="Mean-Field Approximation")
 
-    if exact:
-        plt.plot(x_values, m_exact, label="Exact Solution")
+if exact:
+    plt.plot(x_values, m_exact, label="Exact Solution")
 
-    plt.title("System Magnetization")
-    plt.xlabel(x_label)
-    plt.ylabel("Magnetization")
+plt.title("System Magnetization")
+
+if graph == 1 or graph == 2:
+    params = [("N", N), ("J", J), ("h", h)]
+if graph == 3:
+    params = [("N", N), ("J", J), ("T", T)]
+
+for param, position in zip(params, positioning):
+    plt.figtext(position[0], position[1], f"{param[0]} = {param[1]}")
+
+plt.xlabel(x_label)
+plt.ylabel("<m>")
+
+plt.axhline(y=0, color="k", linestyle="-", linewidth=1.2)
+
+if mean_field or exact:
     plt.legend()
 
-    plt.axhline(y=0, color="k", linestyle="-", linewidth=1.2)
+lower_bound = m_avgs - m_stds
+upper_bound = m_avgs + m_stds
+plt.fill_between(x_values, lower_bound, upper_bound, alpha=0.3)
 
-    lower_bound = m_avgs - m_stds
-    upper_bound = m_avgs + m_stds
+if energy_graph:
+    # ENERGY
+
+    plt.subplot(1, 2, 2)
+    plt.plot(x_values, e_avgs, label="Monte Carlo")
+    plt.title("System Energy")
+    plt.xlabel(x_label)
+    plt.ylabel("<E>")
+
+    lower_bound = e_avgs - e_stds
+    upper_bound = e_avgs + e_stds
     plt.fill_between(x_values, lower_bound, upper_bound, alpha=0.3)
 
-    plt.show()
+# Display graph!
+plt.show()
+
+# fig.savefig("B_complete.pdf",bbox_inches='tight')
